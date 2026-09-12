@@ -1,0 +1,48 @@
+Options -Indexes
+
+DirectoryIndex index.php
+
+RewriteEngine On
+
+# ----------------------------------------------------------------------
+# 1. External 301 Redirects: Force Clean URLs (Remove index.php & .php)
+# ----------------------------------------------------------------------
+
+# Redirect direct requests for index.php to root or subfolder root
+RewriteCond %{THE_REQUEST} \s/+(?:[^/]+/)*index\.php[\s?] [NC]
+RewriteCond %{REQUEST_URI} ^(.*)index\.php$ [NC]
+RewriteRule ^index\.php$ %1 [R=301,L]
+
+# Redirect direct country.php?slug=xyz to /countries/xyz
+RewriteCond %{THE_REQUEST} \s/+(?:[^/]+/)*country\.php\?slug=([^\s&]+) [NC]
+RewriteCond %{REQUEST_URI} ^(.*)country\.php$ [NC]
+RewriteRule ^country\.php$ %1countries/%2? [R=301,L]
+
+# Redirect direct article.php?slug=xyz to /news/xyz
+RewriteCond %{THE_REQUEST} \s/+(?:[^/]+/)*article\.php\?slug=([^\s&]+) [NC]
+RewriteCond %{REQUEST_URI} ^(.*)article\.php$ [NC]
+RewriteRule ^article\.php$ %1news/%2? [R=301,L]
+
+# Redirect direct requests for any other .php file to extensionless URL
+RewriteCond %{THE_REQUEST} \s/+(?:[^/]+/)*([a-zA-Z0-9_-]+)\.php[\s?] [NC]
+RewriteCond %{REQUEST_URI} ^(.*)([a-zA-Z0-9_-]+)\.php$ [NC]
+RewriteRule ^([a-zA-Z0-9_-]+)\.php$ %1%2 [R=301,L]
+
+# ----------------------------------------------------------------------
+# 2. Internal Rewrites: Map Clean URLs to PHP Files
+# ----------------------------------------------------------------------
+
+# Alias /visa to gcc-unified-visa.php
+RewriteRule ^visa/?$ gcc-unified-visa.php [L,QSA]
+
+# Country guide: countries/{slug} -> country.php?slug={slug}
+RewriteRule ^countries/([a-zA-Z0-9_-]+)/?$ country.php?slug=$1 [L,QSA]
+
+# Article / News guide: news/([a-zA-Z0-9_-]+) -> article.php?slug={slug}
+RewriteRule ^news/([a-zA-Z0-9_-]+)/?$ article.php?slug=$1 [L,QSA]
+
+# Map any extensionless request to .php file if it exists
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}\.php -f
+RewriteRule ^([a-zA-Z0-9_-]+)/?$ $1.php [L,QSA]
